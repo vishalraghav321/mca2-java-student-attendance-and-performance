@@ -22,13 +22,14 @@ public class AuthDTO {
         private Long userId;
         private String name;
         private String email;
+        private boolean mustChangePassword;
     }
 
     @Getter @Setter
     public static class RegisterRequest {
         @NotBlank private String name;
         @Email @NotBlank private String email;
-        @NotBlank private String password;
+        private String password;
         private User.Role role;
         // Student fields
         private String rollNumber;
@@ -37,5 +38,21 @@ public class AuthDTO {
         // Faculty fields
         private String department;
         private String designation;
+    }
+
+    @Getter @Setter
+    public static class ChangePasswordRequest {
+        @NotBlank private String currentPassword;
+        @NotBlank private String newPassword;
+        @NotBlank private String confirmPassword;
+    }
+
+    @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class AccountCreatedResponse {
+        private Long userId;
+        private String name;
+        private String email;
+        private String role;
+        private String temporaryPassword;
     }
 }

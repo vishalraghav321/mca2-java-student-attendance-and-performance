@@ -31,6 +31,7 @@ public class DataInitializer implements CommandLineRunner {
                 .email("admin@sms.com")
                 .password(passwordEncoder.encode("admin123"))
                 .role(User.Role.ADMIN)
+                .mustChangePassword(false)
                 .build();
         userRepository.save(admin);
 
@@ -42,6 +43,7 @@ public class DataInitializer implements CommandLineRunner {
                 .role(User.Role.FACULTY)
                 .department("Computer Science")
                 .designation("Associate Professor")
+                .mustChangePassword(false)
                 .build();
         userRepository.save(faculty);
 
@@ -54,6 +56,7 @@ public class DataInitializer implements CommandLineRunner {
                 .rollNumber("CSE2023001")
                 .branch("Computer Science")
                 .semester(4)
+                .mustChangePassword(false)
                 .build();
         userRepository.save(student);
 

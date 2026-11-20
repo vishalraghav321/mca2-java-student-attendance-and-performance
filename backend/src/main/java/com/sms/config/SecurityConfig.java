@@ -33,8 +33,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(org.springframework.security.config.Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register").hasRole("ADMIN")
+                .requestMatchers("/api/auth/change-password").authenticated()
                 .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()
-                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/admin/students/**").hasAnyRole("ADMIN", "FACULTY")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

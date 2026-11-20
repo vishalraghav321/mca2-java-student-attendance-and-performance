@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.sms.entity.User;
+import com.sms.repository.UserRepository;
 
 import java.io.IOException;
 
@@ -19,10 +21,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -54,6 +58,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                User user = userRepository.findByEmail(userEmail).orElse(null);
+                if (user != null && user.isMustChangePassword()) {
+                    String path = request.getRequestURI();
+                    boolean allowed = path.equals("/api/auth/change-password")
+                            || path.equals("/api/auth/me")
+                            || path.equals("/api/auth/logout")
+                            || path.equals("/api/auth/login");
+                    if (!allowed) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"message\":\"Password change required before accessing this resource\"}");
+                        return;
+                    }
+                }
             }
         }
 

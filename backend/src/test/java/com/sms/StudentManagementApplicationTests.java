@@ -39,10 +39,18 @@ class StudentManagementApplicationTests {
     }
 
     @Test
-    void publicRegistrationCanCreateStudentOnly() throws Exception {
+    void publicRegistrationCannotCreateStudent() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Public Student\",\"email\":\"public-student@sms.test\",\"password\":\"password\",\"role\":\"STUDENT\",\"semester\":1}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void changePasswordRequiresAuthentication() throws Exception {
+        mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"currentPassword\":\"password\",\"newPassword\":\"NewPassword1!\",\"confirmPassword\":\"NewPassword1!\"}"))
+                .andExpect(status().isForbidden());
     }
 }

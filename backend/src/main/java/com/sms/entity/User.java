@@ -26,6 +26,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Builder.Default
+    @Column(name = "must_change_password", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean mustChangePassword = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

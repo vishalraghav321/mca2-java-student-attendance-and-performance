@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/common/Layout'
 import { adminService, courseService, authService } from '../services/api'
-import { Users, BookOpen, GraduationCap, Plus, Trash2, UserPlus, LayoutDashboard } from 'lucide-react'
+import { Users, BookOpen, GraduationCap, Plus, Trash2, UserPlus, LayoutDashboard, Copy, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 import {
   required,
   validateFullName,
   validateEmail,
-  validatePassword,
   validateRollNumber,
   validateSemester,
   validateInteger,
@@ -55,7 +54,8 @@ function StudentsPanel() {
   const [courses, setCourses] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [showEnroll, setShowEnroll] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', password: '', rollNumber: '', branch: '', semester: '' })
+  const [form, setForm] = useState({ name: '', email: '', rollNumber: '', branch: '', semester: '' })
+  const [createdAccount, setCreatedAccount] = useState(null)
   const [enrollData, setEnrollData] = useState({ studentId: '', courseId: '' })
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState('success')
@@ -77,22 +77,20 @@ function StudentsPanel() {
     const nextErrors = {
       name: validateFullName(form.name),
       email: validateEmail(form.email) || validateDuplicate(form.email, students, s => s.email, 'Email'),
-      password: validatePassword(form.password),
       rollNumber: validateRollNumber(form.rollNumber) || validateDuplicate(form.rollNumber, students, s => s.rollNumber, 'Roll number'),
       branch: required(form.branch, 'Branch'),
       semester: validateSemester(form.semester),
     }
-    setTouched({ name: true, email: true, password: true, rollNumber: true, branch: true, semester: true })
+    setTouched({ name: true, email: true, rollNumber: true, branch: true, semester: true })
     setErrors(nextErrors)
     if (Object.values(nextErrors).some(Boolean) || saving) return
     setSaving(true)
     setMsg('')
     try {
-      await authService.register({ ...form, role: 'STUDENT', semester: Number(form.semester) })
-      setMsg('Student added!')
-      setMsgType('success')
+      const response = await authService.register({ ...form, role: 'STUDENT', semester: Number(form.semester) })
+      setCreatedAccount(response.data)
       load(); setShowAdd(false); setErrors({})
-      setForm({ name: '', email: '', password: '', rollNumber: '', branch: '', semester: '' })
+      setForm({ name: '', email: '', rollNumber: '', branch: '', semester: '' })
     } catch {
       setMsg('Error adding student')
       setMsgType('error')
@@ -151,6 +149,28 @@ function StudentsPanel() {
 
       {msg && <p className={`mb-4 text-sm p-3 rounded-lg ${msgType === 'error' ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>{msg}</p>}
 
+      {createdAccount && (
+        <div className="mb-6 bg-white border border-green-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-green-600 mt-0.5" size={24} />
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900">Account created successfully</h3>
+              <p className="text-sm text-gray-600 mt-1">User: {createdAccount.name}</p>
+              <p className="text-sm text-gray-600">Email: {createdAccount.email}</p>
+              <div className="mt-3 flex items-center gap-2">
+                <code className="bg-gray-100 px-3 py-2 rounded-lg font-mono text-sm">{createdAccount.temporaryPassword}</code>
+                <button type="button" onClick={() => navigator.clipboard.writeText(createdAccount.temporaryPassword)}
+                  className="flex items-center gap-1 border px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+                  <Copy size={15} /> Copy password
+                </button>
+              </div>
+              <p className="text-xs text-amber-700 mt-3">Share these credentials securely. This temporary password will not be shown again.</p>
+            </div>
+            <button type="button" onClick={() => setCreatedAccount(null)} className="text-gray-400 hover:text-gray-600">Close</button>
+          </div>
+        </div>
+      )}
+
       {showEnroll && (
         <form onSubmit={handleEnroll} className="bg-white p-6 rounded-2xl shadow-sm mb-6 grid grid-cols-2 gap-4 border border-purple-100">
           <div className="col-span-2">
@@ -196,11 +216,10 @@ function StudentsPanel() {
 
       {showAdd && (
         <form onSubmit={handleAdd} className="bg-white p-6 rounded-2xl shadow-sm mb-6 grid grid-cols-2 gap-4">
-          {[['name','Full Name','text'],['email','Email','email'],['password','Password','password'],['rollNumber','Roll Number','text'],['branch','Branch','text'],['semester','Semester','number']].map(([key,label,type]) => {
+          {[['name','Full Name','text'],['email','Email','email'],['rollNumber','Roll Number','text'],['branch','Branch','text'],['semester','Semester','number']].map(([key,label,type]) => {
             const validate = (value) => {
               if (key === 'name') return validateFullName(value)
               if (key === 'email') return validateEmail(value) || validateDuplicate(value, students, s => s.email, 'Email')
-              if (key === 'password') return validatePassword(value)
               if (key === 'rollNumber') return validateRollNumber(value) || validateDuplicate(value, students, s => s.rollNumber, 'Roll number')
               if (key === 'branch') return required(value, 'Branch')
               if (key === 'semester') return validateSemester(value)
@@ -411,7 +430,8 @@ export default function AdminDashboard() {
 function FacultyList() {
   const [faculty, setFaculty] = useState([])
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', password: '', department: '', designation: '' })
+  const [form, setForm] = useState({ name: '', email: '', department: '', designation: '' })
+  const [createdAccount, setCreatedAccount] = useState(null)
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState('success')
   const [errors, setErrors] = useState({})
@@ -425,20 +445,18 @@ function FacultyList() {
     const nextErrors = {
       name: validateFullName(form.name),
       email: validateEmail(form.email) || validateDuplicate(form.email, faculty, f => f.email, 'Email'),
-      password: validatePassword(form.password),
       department: required(form.department, 'Department'),
       designation: required(form.designation, 'Designation'),
     }
-    setTouched({ name: true, email: true, password: true, department: true, designation: true })
+    setTouched({ name: true, email: true, department: true, designation: true })
     setErrors(nextErrors)
     if (Object.values(nextErrors).some(Boolean) || saving) return
     setSaving(true)
     setMsg('')
     try {
-      await authService.register({ ...form, role: 'FACULTY' })
-      setMsg('Faculty added!')
-      setMsgType('success')
-      setForm({ name: '', email: '', password: '', department: '', designation: '' })
+      const response = await authService.register({ ...form, role: 'FACULTY' })
+      setCreatedAccount(response.data)
+      setForm({ name: '', email: '', department: '', designation: '' })
       setShowAdd(false); setErrors({})
       load()
     } catch {
@@ -457,13 +475,33 @@ function FacultyList() {
         </button>
       </div>
       {msg && <p className={`mb-4 text-sm p-3 rounded-lg ${msgType === 'error' ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>{msg}</p>}
+      {createdAccount && (
+        <div className="mb-6 bg-white border border-green-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="text-green-600 mt-0.5" size={24} />
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900">Account created successfully</h3>
+              <p className="text-sm text-gray-600 mt-1">User: {createdAccount.name}</p>
+              <p className="text-sm text-gray-600">Email: {createdAccount.email}</p>
+              <div className="mt-3 flex items-center gap-2">
+                <code className="bg-gray-100 px-3 py-2 rounded-lg font-mono text-sm">{createdAccount.temporaryPassword}</code>
+                <button type="button" onClick={() => navigator.clipboard.writeText(createdAccount.temporaryPassword)}
+                  className="flex items-center gap-1 border px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+                  <Copy size={15} /> Copy password
+                </button>
+              </div>
+              <p className="text-xs text-amber-700 mt-3">Share these credentials securely. This temporary password will not be shown again.</p>
+            </div>
+            <button type="button" onClick={() => setCreatedAccount(null)} className="text-gray-400 hover:text-gray-600">Close</button>
+          </div>
+        </div>
+      )}
       {showAdd && (
         <form onSubmit={handleAdd} className="bg-white p-6 rounded-2xl shadow-sm mb-6 grid grid-cols-2 gap-4">
-          {[['name','Full Name','text'],['email','Email','email'],['password','Password','password'],['department','Department','text'],['designation','Designation','text']].map(([key,label,type]) => {
+          {[['name','Full Name','text'],['email','Email','email'],['department','Department','text'],['designation','Designation','text']].map(([key,label,type]) => {
             const validate = (value) => {
               if (key === 'name') return validateFullName(value)
               if (key === 'email') return validateEmail(value) || validateDuplicate(value, faculty, f => f.email, 'Email')
-              if (key === 'password') return validatePassword(value)
               if (key === 'department') return required(value, 'Department')
               if (key === 'designation') return required(value, 'Designation')
               return ''

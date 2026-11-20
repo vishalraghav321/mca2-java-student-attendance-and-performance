@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { BookOpen, Lock, Mail } from 'lucide-react'
@@ -11,8 +11,16 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState({})
   const [touched, setTouched] = useState({})
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user) return
+    if (user.mustChangePassword) navigate('/change-password')
+    else if (user.role === 'ADMIN') navigate('/admin')
+    else if (user.role === 'FACULTY') navigate('/faculty')
+    else navigate('/student')
+  }, [user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,7 +36,8 @@ export default function Login() {
     setLoading(true)
     try {
       const user = await login(email, password)
-      if (user.role === 'ADMIN') navigate('/admin')
+      if (user.mustChangePassword) navigate('/change-password')
+      else if (user.role === 'ADMIN') navigate('/admin')
       else if (user.role === 'FACULTY') navigate('/faculty')
       else navigate('/student')
     } catch {

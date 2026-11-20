@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
+    boolean existsByRollNumber(String rollNumber);
     List<User> findByRole(User.Role role);
 
     @Query("SELECT u FROM User u WHERE u.role = 'STUDENT' AND u.branch = :branch")
