@@ -38,19 +38,6 @@ export default function Login() {
     }
   }
 
-  const fillDemo = (role) => {
-    const creds = {
-      ADMIN: ['admin@sms.com', 'admin123'],
-      FACULTY: ['faculty@sms.com', 'faculty123'],
-      STUDENT: ['student@sms.com', 'student123'],
-    }
-    setEmail(creds[role][0])
-    setPassword(creds[role][1])
-    setFieldErrors({})
-    setTouched({})
-    setError('')
-  }
-
   const validateField = (name, value) => {
     const message = name === 'email' ? validateEmail(value) : required(value, 'Password')
     setFieldErrors(prev => ({ ...prev, [name]: message }))
@@ -64,24 +51,13 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
             <BookOpen className="text-white" size={32} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Student Management System</h1>
           <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
         </div>
-
-        {/* Demo buttons */}
-        <div className="flex gap-2 mb-6">
-          {['ADMIN', 'FACULTY', 'STUDENT'].map(role => (
-            <button key={role} onClick={() => fillDemo(role)}
-              className="flex-1 text-xs py-2 px-1 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-gray-600 transition-colors font-medium">
-              {role}
-            </button>
-          ))}
-        </div>
-        <p className="text-center text-xs text-gray-400 -mt-3 mb-5">Click a role to autofill demo credentials</p>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

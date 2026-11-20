@@ -1,6 +1,4 @@
 import axios from 'axios'
-import { demoMode, mockService } from './mockService'
-
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' }
@@ -32,42 +30,42 @@ export default api
 
 // ---- Auth ----
 export const authService = {
-  login: (email, password) => demoMode ? mockService.login(email, password) : api.post('/auth/login', { email, password }),
-  register: (data) => demoMode ? mockService.register(data) : api.post('/auth/register', data),
-  logout: () => demoMode ? mockService.logout() : api.post('/auth/logout'),
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (data) => api.post('/auth/register', data),
+  logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
 }
 
 // ---- Admin ----
 export const adminService = {
-  dashboard: () => demoMode ? mockService.dashboard() : api.get('/admin/dashboard'),
-  getStudents: () => demoMode ? mockService.getStudents() : api.get('/admin/students'),
-  getFaculty: () => demoMode ? mockService.getFaculty() : api.get('/admin/faculty'),
-  deleteStudent: (id) => demoMode ? mockService.deleteStudent(id) : api.delete(`/admin/students/${id}`),
-  enroll: (studentId, courseId) => demoMode ? mockService.enroll(studentId, courseId) : api.post('/admin/enroll', { studentId, courseId }),
+  dashboard: () => api.get('/admin/dashboard'),
+  getStudents: () => api.get('/admin/students'),
+  getFaculty: () => api.get('/admin/faculty'),
+  deleteStudent: (id) => api.delete(`/admin/students/${id}`),
+  enroll: (studentId, courseId) => api.post('/admin/enroll', { studentId, courseId }),
 }
 
 // ---- Courses ----
 export const courseService = {
-  getAll: () => demoMode ? mockService.getCourses() : api.get('/courses'),
-  create: (data) => demoMode ? mockService.createCourse(data) : api.post('/courses', data),
-  delete: (id) => demoMode ? mockService.deleteCourse(id) : api.delete(`/courses/${id}`),
-  getFacultyCourses: (facultyId) => demoMode ? mockService.getFacultyCourses(facultyId) : api.get(`/faculty/courses?facultyId=${facultyId}`),
-  getStudentCourses: (studentId) => demoMode ? mockService.getStudentCourses(studentId) : api.get(`/student/courses?studentId=${studentId}`),
-  getCourseStudents: (courseId) => demoMode ? mockService.getCourseStudents(courseId) : api.get(`/courses/${courseId}/students`),
+  getAll: () => api.get('/courses'),
+  create: (data) => api.post('/courses', data),
+  delete: (id) => api.delete(`/courses/${id}`),
+  getFacultyCourses: (facultyId) => api.get(`/faculty/courses?facultyId=${facultyId}`),
+  getStudentCourses: (studentId) => api.get(`/student/courses?studentId=${studentId}`),
+  getCourseStudents: (courseId) => api.get(`/courses/${courseId}/students`),
 }
 
 // ---- Attendance ----
 export const attendanceService = {
-  mark: (data) => demoMode ? mockService.markBulk({ courseId: data.courseId, date: data.date, attendance: { [data.studentId]: data.status } }) : api.post('/attendance', data),
-  markBulk: (data) => demoMode ? mockService.markBulk(data) : api.post('/attendance/bulk', data),
-  getByStudent: (studentId) => demoMode ? mockService.getAttendanceByStudent(studentId) : api.get(`/attendance/student/${studentId}`),
-  getByCourse: (courseId) => demoMode ? mockService.getAttendanceByCourse(courseId) : api.get(`/attendance/course/${courseId}`),
+  mark: (data) => api.post('/attendance', data),
+  markBulk: (data) => api.post('/attendance/bulk', data),
+  getByStudent: (studentId) => api.get(`/attendance/student/${studentId}`),
+  getByCourse: (courseId) => api.get(`/attendance/course/${courseId}`),
 }
 
 // ---- Marks ----
 export const marksService = {
-  upload: (data) => demoMode ? mockService.uploadMark(data) : api.post('/marks', data),
-  getByStudent: (studentId) => demoMode ? mockService.getMarksByStudent(studentId) : api.get(`/marks/student/${studentId}`),
-  getByCourse: (courseId) => demoMode ? mockService.getMarksByCourse(courseId) : api.get(`/marks/course/${courseId}`),
+  upload: (data) => api.post('/marks', data),
+  getByStudent: (studentId) => api.get(`/marks/student/${studentId}`),
+  getByCourse: (courseId) => api.get(`/marks/course/${courseId}`),
 }
