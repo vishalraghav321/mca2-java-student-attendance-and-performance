@@ -86,6 +86,7 @@ public class AppDTO {
     public static class AttendanceResponse {
         private Long id;
         private Long studentId;
+        private Long courseId;
         private String studentName;
         private String courseName;
         private LocalDate date;
@@ -96,6 +97,7 @@ public class AppDTO {
             return AttendanceResponse.builder()
                     .id(a.getId())
                     .studentId(a.getStudent().getId())
+                    .courseId(a.getCourse().getId())
                     .studentName(a.getStudent().getName())
                     .courseName(a.getCourse().getName())
                     .date(a.getDate())

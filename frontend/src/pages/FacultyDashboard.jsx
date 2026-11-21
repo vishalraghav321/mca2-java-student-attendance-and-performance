@@ -33,9 +33,20 @@ function FacultyHome({ courses }) {
 }
 
 function AttendancePanel({ courses }) {
+  const todayValue = () => {
+    const today = new Date()
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  }
+  const normalizeDate = (value) => {
+    if (typeof value === 'string') return value.slice(0, 10)
+    if (Array.isArray(value) && value.length >= 3) {
+      return `${value[0]}-${String(value[1]).padStart(2, '0')}-${String(value[2]).padStart(2, '0')}`
+    }
+    return ''
+  }
   const [selectedCourse, setSelectedCourse] = useState('')
   const [students, setStudents] = useState([])
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(todayValue())
   const [attendance, setAttendance] = useState({}) // { studentId: 'PRESENT'|'ABSENT'|'LATE' }
   const [msg, setMsg] = useState('')
   const [saving, setSaving] = useState(false)
@@ -62,7 +73,7 @@ function AttendancePanel({ courses }) {
       attendanceService.getByCourse(selectedCourse)
         .then(res => {
           setExistingAttendance(res.data)
-          const existing = res.data.filter(a => a.date === date)
+          const existing = res.data.filter(a => normalizeDate(a.date) === date)
           setAttendance(prev => {
             const next = { ...prev }
             existing.forEach(a => {
@@ -81,7 +92,7 @@ function AttendancePanel({ courses }) {
       date: validateDate(date, { allowFuture: false }),
     }
     const duplicate = existingAttendance.some(a =>
-      String(a.courseId) === String(selectedCourse) && a.date === date
+      String(a.courseId) === String(selectedCourse) && normalizeDate(a.date) === date
     )
     if (!nextErrors.course && !nextErrors.date && duplicate) {
       nextErrors.date = 'Attendance already exists for this course and date'
@@ -102,8 +113,8 @@ function AttendancePanel({ courses }) {
         attendance: attendanceMap
       })
       setMsg('Attendance saved successfully!')
-    } catch {
-      setMsg('Error saving attendance.')
+    } catch (err) {
+      setMsg(err.response?.data?.message || 'Error saving attendance.')
     } finally {
       setSaving(false)
     }
@@ -127,7 +138,7 @@ function AttendancePanel({ courses }) {
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600 block mb-1">Date</label>
-            <input type="date" value={date} max={new Date().toLocaleDateString('en-CA')}
+            <input type="date" value={date} max={todayValue()}
               onChange={e => { const value=e.target.value; setDate(value); if(touched.date) setErrors(prev=>({...prev,date:validateDate(value,{allowFuture:false})})) }}
               onBlur={() => { setTouched(prev=>({...prev,date:true})); setErrors(prev=>({...prev,date:validateDate(date,{allowFuture:false})})) }}
               className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${touched.date&&errors.date?'border-red-500':'border-gray-200'}`} />

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @RestController
@@ -173,6 +174,9 @@ public class CourseController {
         if (!course.getStudents().contains(student) || req.getDate() == null || req.getStatus() == null) {
             return ResponseEntity.badRequest().body(new AppDTO.MessageResponse("Invalid attendance data"));
         }
+        if (req.getDate().isAfter(LocalDate.now())) {
+            return ResponseEntity.badRequest().body(new AppDTO.MessageResponse("Attendance date cannot be in the future"));
+        }
         Attendance attendance = attendanceRepository
                 .findByStudentIdAndCourseIdAndDate(student.getId(), course.getId(), req.getDate())
                 .orElse(Attendance.builder().student(student).course(course).date(req.getDate()).build());
@@ -190,6 +194,9 @@ public class CourseController {
         assertFacultyOwnsCourse(course, principal);
         if (req.getDate() == null || req.getAttendance() == null || req.getAttendance().isEmpty()) {
             return ResponseEntity.badRequest().body(new AppDTO.MessageResponse("Invalid attendance data"));
+        }
+        if (req.getDate().isAfter(LocalDate.now())) {
+            return ResponseEntity.badRequest().body(new AppDTO.MessageResponse("Attendance date cannot be in the future"));
         }
         for (Map.Entry<Long, Attendance.Status> entry : req.getAttendance().entrySet()) {
             if (entry.getValue() == null) throw new IllegalArgumentException("Invalid attendance status");
